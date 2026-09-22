@@ -41,6 +41,9 @@ const INSTAGRAM_URL = "https://www.instagram.com/cafeffuego/";
 const INSTAGRAM_HANDLE = "@cafeffuego";
 const FACEBOOK_URL = "https://web.facebook.com/profile.php?id=61563777173136";
 const MENU_PDF = "/carta-flor-de-fuego.pdf";
+// Actualizar junto con aggregateRating en index.html.
+const RATING = "4.9";
+const REVIEW_COUNT = 88;
 
 const NAV_LINKS = [
   { href: "#inicio", label: "Inicio" },
@@ -52,7 +55,8 @@ const NAV_LINKS = [
   { href: "#visitanos", label: "Ubicación" },
 ];
 
-// Reseñas reales, verificadas en Google Maps el 31/08/2026 (maps.app.goo.gl/dtq4f1Evm3VTWEXw7).
+// Reseñas reales, verificadas en Google Maps el 31/08/2026 y ampliadas el 22/09/2026
+// (maps.app.goo.gl/dtq4f1Evm3VTWEXw7).
 const REVIEWS = [
   {
     text: "Pedimos un Iced Cholo Café y un Cholo Pisquero, ambas bebidas tienen un buen equilibrio de sus ingredientes. El café que ofrecen es buenísimo y la hospitalidad de Miguel es buenísima, te invita a seguir disfrutando de los productos que…",
@@ -107,6 +111,51 @@ const REVIEWS = [
   {
     text: "Excelente servicio por parte del señor, nos supo explicar con detalle el tipo de café y el procedimiento en el preparado. La atención 10/10. Ambiente relajante y acogedor. Comida top.",
     author: "Keila Rios",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Me encantó la cafetería! El ambiente es acogedor y relajante, perfecto para un día de estudio o para disfrutar de un café con amigos. El café es delicioso, definitivamente uno de los mejores que he probado en la zona.",
+    author: "Jhonny Gutierrez",
+    source: "Reseña de Google",
+  },
+  {
+    text: "El café es muy muy bueno y la atención es insuperable. La presentación de sus productos, además, es muy prolija y atenta a los detalles. Vengo con mi familia con frecuencia. (Permiten el ingreso de mascotas)",
+    author: "Carlos Carbajal",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Muy buen ambiente, tranquilo, acogedor, la música muy agradable para disfrutar una buena conversación. El Señor Miguel tiene un trato muy amable, delicioso café y sus postres muy ricos. Probé el keke de plátano, delicioso.",
+    author: "Rosalin Vidal",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Excelente atención, café y postres deliciosos, además el ambiente es super tranquilo y acogedor. Definitivamente volveré seguido para seguir probando todas las variedades de bebidas de café.",
+    author: "Elva Andrade Masias",
+    source: "Reseña de Google",
+  },
+  {
+    text: "El trato fue muy amable, me atendieron súper bien, te dan todo el tiempo que necesites para ver la carta. El keke y las empanadas muy frescas, bebidas ricas. Tienen wifi y muy buena música.",
+    author: "Bayron Yacila Velasquez",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Muy rico el café y los sándwiches que ofrecen. El señor que nos atendió fue muy amable. La torta de chocolate es de lo mejor, se siente el verdadero cacao. Definitivamente volvería.",
+    author: "lionela Llallahui",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Excelente lugar, muy recomendable. Si quieres disfrutar de un buen café no puedes dejar de visitarlo. Qué bueno encontrar lugares como este en Lima.",
+    author: "Enrique AR",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Café de especialidad en un lugar muy acogedor y con atención esmerada. Los alimentos están deliciosos y el café está disponible solo con métodos. ¡Súper recomendado!",
+    author: "Claudia Davila",
+    source: "Reseña de Google",
+  },
+  {
+    text: "Un cálido y ameno lugar con excelente café y un muy bonito ambiente. Totalmente recomendable: si están en Pueblo Libre, es un lugar que deben visitar.",
+    author: "Gonzalo Alarcón Almeyda",
     source: "Reseña de Google",
   },
 ];
@@ -266,7 +315,7 @@ function Hero() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 hover:text-accent"
             >
-              <Star className="h-4 w-4 fill-accent text-accent" /> 4.9 · 84 opiniones en Google
+              <Star className="h-4 w-4 fill-accent text-accent" /> {RATING} · {REVIEW_COUNT} opiniones en Google
             </a>
           </div>
         </div>
@@ -323,8 +372,8 @@ function About() {
               ref={imgRef}
               src={historiaPonciana}
               alt="La ponciana en flor frente a la puerta de Flor de Fuego, en Pueblo Libre"
-              width={1470}
-              height={1100}
+              width={1200}
+              height={898}
               loading="lazy"
               className="parallax-layer h-56 w-full scale-110 object-cover sm:h-72"
             />
@@ -689,7 +738,7 @@ function GaleriaCarousel() {
   const tile = "h-64 w-64 shrink-0 rounded-sm object-cover sm:h-80 sm:w-80";
 
   const [paused, setPaused] = useState(false);
-  const resumeTimer = useRef<ReturnType<typeof setTimeout>>();
+  const resumeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // El loop debe seguir corriendo también al arrastrar con el dedo en
   // mobile; solo se pausa con mouse (hover/drag de puntero real).
   const pause = (e: React.PointerEvent) => {
@@ -834,7 +883,7 @@ function Reviews() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-cream/75 hover:text-accent"
             >
-              <Star className="h-4 w-4 fill-accent text-accent" /> 4.9 · 84 opiniones
+              <Star className="h-4 w-4 fill-accent text-accent" /> {RATING} · {REVIEW_COUNT} opiniones
             </a>
           </div>
         </Reveal>
@@ -842,6 +891,15 @@ function Reviews() {
         <div className="mt-12">
           <ReviewsCarousel />
         </div>
+
+        <a
+          href={MAPS_PLACE}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-10 inline-flex items-center gap-2 rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+        >
+          Ver las {REVIEW_COUNT} opiniones en Google
+        </a>
       </div>
     </section>
   );
@@ -911,7 +969,7 @@ function Visit() {
                   <Instagram className="mt-1 h-5 w-5 shrink-0 text-primary" />
                   <span>
                     {INSTAGRAM_HANDLE}
-                    <span className="block text-sm text-muted-foreground">Seguinos en Instagram</span>
+                    <span className="block text-sm text-muted-foreground">Síguenos en Instagram</span>
                   </span>
                 </a>
                 <a
@@ -923,7 +981,7 @@ function Visit() {
                   <Facebook className="mt-1 h-5 w-5 shrink-0 text-primary" />
                   <span>
                     Flor de Fuego
-                    <span className="block text-sm text-muted-foreground">Seguinos en Facebook</span>
+                    <span className="block text-sm text-muted-foreground">Síguenos en Facebook</span>
                   </span>
                 </a>
               </div>
@@ -947,9 +1005,32 @@ function Visit() {
   );
 }
 
+// En mobile los CTAs del hero quedan atrás al hacer scroll; esta barra
+// mantiene a mano las dos acciones que convierten (llamar / cómo llegar).
+function MobileActionBar() {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-border/60 bg-background/90 px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+      <a
+        href={`tel:${PHONE_TEL}`}
+        className="inline-flex items-center justify-center gap-2 rounded-full border border-cream/30 py-3 text-sm font-semibold text-cream"
+      >
+        <Phone className="h-4 w-4" /> Llamar
+      </a>
+      <a
+        href={MAPS_DIR}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground"
+      >
+        <MapPin className="h-4 w-4" /> Cómo llegar
+      </a>
+    </div>
+  );
+}
+
 function Footer() {
   return (
-    <footer className="border-t border-border">
+    <footer className="border-t border-border pb-20 md:pb-0">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-14 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <img
@@ -1034,6 +1115,7 @@ export default function App() {
         </div>
       </main>
       <Footer />
+      <MobileActionBar />
     </>
   );
 }
