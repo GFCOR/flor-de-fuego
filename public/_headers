@@ -1,0 +1,23 @@
+# Cabeceras HTTP para Cloudflare Pages (también las lee Netlify).
+# vite.config.ts las reutiliza en `npm run preview` para probarlas en local.
+#
+# Si agregas un servicio externo nuevo (analytics, widget, otra API), suma su
+# dominio a la directiva que corresponda de la CSP o el navegador lo bloqueará.
+# static.cloudflareinsights.com = Cloudflare Web Analytics (opcional, gratis).
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; media-src 'self'; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; frame-src https://www.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# Archivos con hash en el nombre: nunca cambian, se cachean un año en el CDN
+# y en el navegador (menos tráfico al origen si hay picos de visitas).
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

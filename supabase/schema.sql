@@ -27,10 +27,7 @@ create policy "galeria_select_public" on galeria
 create policy "comentarios_select_aprobados" on comentarios
   for select using (aprobado = true);
 
--- Escritura pública: cualquier visitante puede dejar un comentario,
--- pero siempre entra como pendiente (aprobado se ignora si lo mandan en true).
-create policy "comentarios_insert_publico" on comentarios
-  for insert with check (aprobado = false);
+-- Sin insert público: ver supabase/hardening.sql (spam/abuso con la anon key).
 
 -- Nota: no hay policies de insert/update/delete para "galeria" ni de
 -- update/delete para "comentarios" -> por defecto RLS deniega todo lo
@@ -41,7 +38,7 @@ create policy "comentarios_insert_publico" on comentarios
 -- Postgres no le da privilegios a los roles de la Data API por defecto.
 -- RLS filtra filas, pero antes de eso hace falta el GRANT a nivel de tabla.
 grant select on galeria to anon, authenticated;
-grant select, insert on comentarios to anon, authenticated;
+grant select on comentarios to anon, authenticated;
 
 -- Bucket de Storage para las fotos de la galería.
 insert into storage.buckets (id, name, public)
@@ -70,14 +67,11 @@ grant update, delete on comentarios to authenticated;
 alter table comentarios add column if not exists foto_url text;
 
 -- Bucket separado del de "galeria" (ese es solo tuyo, curado a mano).
--- Este permite subida pública, pero con límite de tamaño y tipo de archivo
--- para que no se llene el storage gratis con archivos gigantes o basura.
+-- Límite de tamaño y tipo de archivo. La subida pública está cerrada
+-- (ver supabase/hardening.sql) hasta que haya captcha + límite por IP.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('comentarios-fotos', 'comentarios-fotos', true, 5242880, array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
 
 create policy "comentarios_fotos_lectura_publica" on storage.objects
   for select using (bucket_id = 'comentarios-fotos');
-
-create policy "comentarios_fotos_insert_publico" on storage.objects
-  for insert with check (bucket_id = 'comentarios-fotos');
