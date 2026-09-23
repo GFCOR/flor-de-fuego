@@ -153,6 +153,63 @@
   color: transparent;
 }
 
+/* Título "encantado": base de fuego con dos destellos diagonales que se cruzan (como el
+   brillo de encantamiento de Minecraft). Padding/margen negativo para que background-clip
+   no recorte la "g" con leading < 1. */
+.fire-text {
+  padding-block: 0.08em 0.18em;
+  margin-block: -0.08em -0.18em;
+  background-image:
+    linear-gradient(
+      115deg,
+      transparent 38%,
+      oklch(0.98 0.06 95 / 0.95) 44%,
+      oklch(0.86 0.16 70 / 0.8) 47%,
+      transparent 53%,
+      transparent 70%,
+      oklch(0.95 0.1 85 / 0.7) 74%,
+      transparent 79%
+    ),
+    linear-gradient(
+      65deg,
+      transparent 40%,
+      oklch(0.78 0.2 45 / 0.9) 47%,
+      oklch(0.95 0.08 90 / 0.75) 50%,
+      transparent 57%
+    ),
+    linear-gradient(
+      0deg,
+      oklch(0.5 0.2 28) 10%,
+      oklch(0.63 0.21 36) 45%,
+      oklch(0.76 0.18 55) 80%,
+      oklch(0.86 0.14 75) 100%
+    );
+  background-size: 260% 100%, 320% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 100% 0, 0% 0, 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 0.1em oklch(0.66 0.21 38 / 0.6))
+    drop-shadow(0 0 0.35em oklch(0.58 0.192 33 / 0.45));
+  animation:
+    fire-glint 3.2s linear infinite,
+    fire-glow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes fire-glint {
+  to {
+    background-position: 0% 0, 100% 0, 0 0;
+  }
+}
+
+@keyframes fire-glow {
+  to {
+    filter: drop-shadow(0 0 0.14em oklch(0.74 0.19 50 / 0.8))
+      drop-shadow(0 0 0.5em oklch(0.6 0.2 35 / 0.6));
+  }
+}
+
 @utility bg-ember-gradient {
   background-image: var(--gradient-ember);
 }
@@ -241,6 +298,10 @@
 
   .marquee-track-dup {
     display: none;
+  }
+
+  .fire-text {
+    animation: none;
   }
 }
 

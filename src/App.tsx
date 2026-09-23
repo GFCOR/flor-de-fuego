@@ -277,7 +277,7 @@ function Hero() {
           <p className="mb-4 text-xs uppercase tracking-[0.42em] text-accent">
             Pueblo Libre · Lima
           </p>
-          <h1 className="font-display text-[clamp(2.75rem,9vw,6rem)] leading-[0.92]">
+          <h1 className="fire-text font-display text-[clamp(2.75rem,9vw,6rem)] leading-[0.92]">
             Flor de Fuego
           </h1>
           <h2 className="mt-2 font-display text-xl text-cream/85 sm:text-2xl">
