@@ -25,7 +25,7 @@ const galleryImages = import.meta.glob("./assets/gallery/**/*.jpg", {
   eager: true,
   import: "default",
 }) as Record<string, string>;
-import { useParallax } from "@/hooks/use-motion";
+import { prefersReducedMotion, useParallax } from "@/hooks/use-motion";
 import { Reveal } from "@/components/site/Reveal";
 import { menu, rituals } from "@/data/menu";
 import { supabase } from "@/lib/supabase";
@@ -825,45 +825,138 @@ function Galeria() {
   );
 }
 
-function ReviewCard({
-  review,
-  hidden = false,
-}: {
-  review: (typeof REVIEWS)[number];
-  hidden?: boolean;
-}) {
+const REVIEW_INTERVAL_MS = 8000;
+const AVATAR_HUES = [28, 48, 62, 18, 75, 38, 55, 12];
+
+function ReviewAvatar({ index, className = "" }: { index: number; className?: string }) {
   return (
-    <figure
-      aria-hidden={hidden}
-      className="w-[85vw] shrink-0 rounded-sm border border-border bg-card/60 p-7 sm:w-96"
+    <span
+      aria-hidden="true"
+      className={`grid shrink-0 place-items-center rounded-full font-display font-medium text-background ${className}`}
+      style={{ backgroundColor: `oklch(0.79 0.12 ${AVATAR_HUES[index % AVATAR_HUES.length]})` }}
     >
-      <div className="flex gap-1" aria-hidden="true">
-        {Array.from({ length: 5 }).map((_, star) => (
-          <Star key={star} className="h-4 w-4 fill-accent text-accent" />
-        ))}
-      </div>
-      <blockquote className="mt-4 text-cream/85">“{review.text}”</blockquote>
-      <figcaption className="mt-5 text-sm text-muted-foreground">
-        — {review.author}, {review.source}
-      </figcaption>
-    </figure>
+      {REVIEWS[index].author.trim().charAt(0).toUpperCase()}
+    </span>
   );
 }
 
 function ReviewsCarousel() {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [autoplay] = useState(() => !prefersReducedMotion());
+  const dragStartX = useRef<number | null>(null);
+  const didDrag = useRef(false);
+  const lastWheel = useRef(0);
+  const running = autoplay && !paused;
+  const total = REVIEWS.length;
+
+  const go = (next: number) => setIndex((next + total) % total);
+
+  // El temporizador se reinicia en cada cambio (manual o automático) y al reanudar.
+  useEffect(() => {
+    if (!running) return;
+    const id = window.setTimeout(() => setIndex((i) => (i + 1) % total), REVIEW_INTERVAL_MS);
+    return () => window.clearTimeout(id);
+  }, [index, running, total]);
+
   return (
-    <div className="marquee-viewport">
-      <div className="marquee-track">
-        {REVIEWS.map((review) => (
-          <ReviewCard key={review.author} review={review} />
-        ))}
-        {/* Copia visual para el loop continuo; oculta de lectores de pantalla y
-            descartada bajo prefers-reduced-motion (ver styles.css). */}
-        <div className="marquee-track-dup contents">
-          {REVIEWS.map((review) => (
-            <ReviewCard key={`dup-${review.author}`} review={review} hidden />
-          ))}
+    <div
+      role="group"
+      aria-roledescription="carrusel"
+      aria-label="Opiniones de clientes"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={(e) => e.target.matches(":focus-visible") && setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <div className="flex items-center gap-5">
+        <p className="font-display text-6xl leading-none text-foreground">{RATING}</p>
+        <div>
+          <div className="flex gap-1" aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, star) => (
+              <Star key={star} className="h-5 w-5 fill-accent text-accent" />
+            ))}
+          </div>
+          <p className="mt-1.5 text-sm text-muted-foreground">{REVIEW_COUNT} opiniones en Google</p>
         </div>
+      </div>
+
+      {/* Coverflow: la tarjeta activa al centro, las vecinas se alejan y se desenfocan */}
+      <div
+        tabIndex={0}
+        aria-label="Desliza para ver más opiniones"
+        className="review-stage relative mt-8 h-[22rem] cursor-grab select-none overflow-hidden rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") go(index - 1);
+          if (e.key === "ArrowRight") go(index + 1);
+        }}
+        onWheel={(e) => {
+          // Trackpad / rueda horizontal: un gesto = una tarjeta.
+          if (Math.abs(e.deltaX) < 20 || Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+          const now = Date.now();
+          if (now - lastWheel.current < 450) return;
+          lastWheel.current = now;
+          go(index + (e.deltaX > 0 ? 1 : -1));
+        }}
+        onPointerDown={(e) => {
+          dragStartX.current = e.clientX;
+          didDrag.current = false;
+        }}
+        onPointerUp={(e) => {
+          if (dragStartX.current === null) return;
+          const dx = e.clientX - dragStartX.current;
+          dragStartX.current = null;
+          if (Math.abs(dx) > 40) {
+            didDrag.current = true;
+            go(index + (dx < 0 ? 1 : -1));
+          }
+        }}
+        onPointerCancel={() => {
+          dragStartX.current = null;
+        }}
+      >
+        {REVIEWS.map((review, i) => {
+          let d = i - index;
+          if (d > total / 2) d -= total;
+          if (d < -total / 2) d += total;
+          const dist = Math.abs(d);
+          const active = d === 0;
+          return (
+            <figure
+              key={review.author}
+              aria-hidden={!active}
+              onClick={() => !active && !didDrag.current && go(i)}
+              className={`review-card absolute left-1/2 top-1/2 w-[min(22rem,80vw)] rounded-md border bg-card p-7 ${
+                active
+                  ? "border-accent shadow-[0_0_0_1px_var(--accent),0_8px_28px_-10px_color-mix(in_oklch,var(--primary)_65%,transparent)]"
+                  : "cursor-pointer border-border"
+              }`}
+              style={{
+                opacity: dist === 0 ? 1 : dist === 1 ? 0.6 : dist === 2 ? 0.25 : 0,
+                visibility: dist <= 2 ? "visible" : "hidden",
+                filter: active ? "none" : `blur(${dist * 1.2}px)`,
+                zIndex: 10 - dist,
+                transform: `translate(-50%, -50%) translateX(calc(${d} * min(28cqw, 260px))) translateZ(${-dist * 120}px) rotateY(${-d * 14}deg) scale(${active ? 1 : 0.88})`,
+              }}
+            >
+              <div className="flex gap-1" aria-hidden="true">
+                {Array.from({ length: 5 }).map((_, star) => (
+                  <Star key={star} className="h-4 w-4 fill-accent text-accent" />
+                ))}
+              </div>
+              <blockquote className="mt-4 text-[0.95rem] leading-relaxed text-cream/90">
+                {review.text}
+              </blockquote>
+              <figcaption className="mt-5 flex items-center gap-3 text-sm text-muted-foreground">
+                <ReviewAvatar index={i} className="h-8 w-8 text-sm" />
+                <span className="min-w-0 truncate">{review.author}</span>
+              </figcaption>
+            </figure>
+          );
+        })}
+        <p className="sr-only" aria-live={paused ? "polite" : "off"}>
+          Opinión de {REVIEWS[index].author}: {REVIEWS[index].text}
+        </p>
       </div>
     </div>
   );
@@ -875,17 +968,7 @@ function Reviews() {
       <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
         <Reveal>
           <p className="text-xs uppercase tracking-[0.42em] text-primary">Lo que dicen</p>
-          <div className="mt-4 flex flex-wrap items-baseline gap-3">
-            <h2 className="text-4xl sm:text-5xl">Opiniones en Google</h2>
-            <a
-              href={MAPS_PLACE}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-cream/75 hover:text-accent"
-            >
-              <Star className="h-4 w-4 fill-accent text-accent" /> {RATING} · {REVIEW_COUNT} opiniones
-            </a>
-          </div>
+          <h2 className="mt-4 text-4xl sm:text-5xl">Opiniones en Google</h2>
         </Reveal>
 
         <div className="mt-12">
