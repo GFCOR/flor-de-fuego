@@ -43,7 +43,7 @@ const FACEBOOK_URL = "https://web.facebook.com/profile.php?id=61563777173136";
 const MENU_PDF = "/carta-flor-de-fuego.pdf";
 // Actualizar junto con aggregateRating en index.html.
 const RATING = "4.9";
-const REVIEW_COUNT = 88;
+const REVIEW_COUNT = 90;
 
 const NAV_LINKS = [
   { href: "#inicio", label: "Inicio" },
